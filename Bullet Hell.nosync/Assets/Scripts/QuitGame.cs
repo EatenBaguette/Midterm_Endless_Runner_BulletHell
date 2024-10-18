@@ -17,7 +17,7 @@ using UnityEngine;
             }
         }
 
-        private void QuitApp()
+        public void QuitApp()
         {
             #if UNITY_EDITOR
                 // Set variable if game is running from Unity

@@ -8,6 +8,7 @@ public static class Utilities
     {
         Play,
         Pause,
-        Title
+        Title,
+        GameOver
     }
 }

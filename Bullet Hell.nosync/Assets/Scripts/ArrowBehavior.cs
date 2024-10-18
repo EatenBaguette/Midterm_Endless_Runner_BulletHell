@@ -9,6 +9,7 @@ public class ArrowBehavior : MonoBehaviour
     [SerializeField] private KeyCode _backwardKey;
     [SerializeField] private KeyCode _leftKey;
     [SerializeField] private KeyCode _rightKey;
+    private float _yLimit = -10f;
 
     [SerializeField] private float _velocity = 2.0f;
 
@@ -19,11 +20,14 @@ public class ArrowBehavior : MonoBehaviour
     private ScoreBehavior _scoreBehavior;
 
     private float topYPos = 0;
+
+    private float _orthographicSize;
     
     // Start is called before the first frame update
     void Start()
     { 
         _scoreBehavior = GetComponent<ScoreBehavior>();
+        _orthographicSize = GameObject.FindObjectOfType<Camera>().orthographicSize;
     }
 
     // Update is called once per frame
@@ -35,9 +39,12 @@ public class ArrowBehavior : MonoBehaviour
             transform.Translate(Vector3.up * (_velocity * Time.deltaTime));
         }
 
-        if (Input.GetKey(_backwardKey))
+        if (transform.position.y > _yLimit)
         {
-            transform.Translate(Vector3.down * (_velocity * Time.deltaTime));
+            if (Input.GetKey(_backwardKey))
+            {
+                transform.Translate(Vector3.down * (_velocity * Time.deltaTime));
+            }
         }
 
         if (Input.GetKey(_leftKey))
@@ -50,11 +57,13 @@ public class ArrowBehavior : MonoBehaviour
             transform.Translate(Vector3.right * (_velocity * Time.deltaTime));
         }
         
-        //Score Updating
+        //Score Updating and YLimit
         if (transform.position.y > topYPos)
         {
             topYPos = transform.position.y;
             _scoreBehavior.Score = topYPos;
+
+            _yLimit = (topYPos - _orthographicSize);
         }
         
     }
@@ -89,6 +98,11 @@ public class ArrowBehavior : MonoBehaviour
                 
                 transform.position = Vector3.Lerp(transform.position, targetpos, _interpolateTime);
             }
+        }
+        
+        if(other.gameObject.CompareTag("Bullet"))
+        {
+            GameBehavior.Instance.GameOver();
         }
     }
 }

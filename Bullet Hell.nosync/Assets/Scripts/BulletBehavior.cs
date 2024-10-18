@@ -4,15 +4,19 @@ using UnityEngine;
 
 public class BulletBehavior : MonoBehaviour
 {
-    // Start is called before the first frame update
+    public float speed;
+
+    private CameraControl _camera;
+
     void Start()
     {
-        
+        if (Camera.main != null) _camera = Camera.main.GetComponent<CameraControl>();
     }
-
-    // Update is called once per frame
     void Update()
     {
-        
+        transform.Translate(Vector3.up * (speed * Time.deltaTime), Space.Self);
+
+        if (transform.position.x > _camera.bottomRight.x || transform.position.y < _camera.bottomRight.y ||
+            transform.position.x < _camera.topLeft.x || transform.position.y > _camera.topLeft.y) Destroy(gameObject);
     }
-}
+}    
