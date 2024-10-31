@@ -48,6 +48,8 @@ public class GameBehavior : MonoBehaviour
         _player = GameObject.Find("Player");
 
         _attackPatternActive = false;
+
+        Cursor.visible = false;
     }
 
     // Update is called once per frame
@@ -71,12 +73,14 @@ public class GameBehavior : MonoBehaviour
             gameState = Utilities.GameState.Pause;
             Time.timeScale = 0f;
             _pauseScreen.SetActive(true);
+            Cursor.visible = true;
         }
         else if (gameState == Utilities.GameState.Pause)
         {
             gameState = Utilities.GameState.Play;
             Time.timeScale = 1.0f;
             _pauseScreen.SetActive(false);
+            Cursor.visible = false;
         }
     }
 
@@ -93,6 +97,7 @@ public class GameBehavior : MonoBehaviour
         gameState = Utilities.GameState.GameOver;
         _gameOverScreen.SetActive(true);
         Time.timeScale = 0f;
+        Cursor.visible = true;
     }
 
     public void Restart()
@@ -114,8 +119,8 @@ public class GameBehavior : MonoBehaviour
             4,
             -6f,
             5f,
-            1,
-            1,
+            3,
+            3,
             225f,
             3f));
         
@@ -127,8 +132,8 @@ public class GameBehavior : MonoBehaviour
             4,
             6f,
             5f,
-            -1,
-            1,
+            -3,
+            3,
             135f,
             2f));
         
@@ -140,7 +145,7 @@ public class GameBehavior : MonoBehaviour
             10,
             -5f,
             10f,
-            1,
+            3,
             0,
             180f,
             3f));
@@ -153,8 +158,8 @@ public class GameBehavior : MonoBehaviour
             Random.Range(5,10),
             (Random.Range(0, 1) == 0 ? -1 : 1) * Random.Range(0,3),
             (Random.Range(0, 1) == 0 ? -1 : 1) * Random.Range(4,10),
-            1,
-            1,
+            3,
+            3,
             Random.Range(0,360),
             Random.Range(0.5f,6f)
             ));

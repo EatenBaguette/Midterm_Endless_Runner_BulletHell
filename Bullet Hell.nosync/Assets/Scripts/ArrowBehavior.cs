@@ -1,108 +1,128 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using Vector3 = UnityEngine.Vector3;
 
 public class ArrowBehavior : MonoBehaviour
 {
-    [SerializeField] private KeyCode _forwardKey;
-    [SerializeField] private KeyCode _backwardKey;
-    [SerializeField] private KeyCode _leftKey;
-    [SerializeField] private KeyCode _rightKey;
-    private float _yLimit = -10f;
-
-    [SerializeField] private float _velocity = 2.0f;
-
-    [SerializeField] private float _borderCollisionDistance = 0.25f;
-
-    [SerializeField] private float _interpolateTime = 3.0f;
+    [SerializeField] private float _velocity = 150f;
 
     private ScoreBehavior _scoreBehavior;
+
+    [SerializeField] private SpriteRenderer _playerColor;
 
     private float topYPos = 0;
 
     private float _orthographicSize;
+
+    private RectMask2D _powerupMeter;
+    private int _powerupMeterMin = -120;
+    private int _powerupMeterMax = -330;
+
+    public float _powerMeterChargeDelta = 0.05f;
+
+    private float _powerChargeAmount;
+    private float PowerChargeAmount
+    {
+        get => _powerChargeAmount;
+        set
+        {
+            _powerChargeAmount = value;
+            var pad = _powerupMeter.padding;
+            pad.z = (-1 * _powerChargeAmount * Mathf.Abs(_powerupMeterMax - _powerupMeterMin) + _powerupMeterMin);
+            _powerupMeter.padding = pad;
+        }
+    }
+    
+    private Vector3 _movement;
+    
+    [SerializeField] Rigidbody2D rb;
+    
+    private bool inBoostPowerup = false;    
+    [SerializeField] private float boostMultiplier;
+    [SerializeField] private float boostDuration;
+    
     
     // Start is called before the first frame update
     void Start()
     { 
         _scoreBehavior = GetComponent<ScoreBehavior>();
         _orthographicSize = GameObject.FindObjectOfType<Camera>().orthographicSize;
+        _powerupMeter = GameObject.Find("Powerup Bar Mask").GetComponent<RectMask2D>();
     }
 
+    void Update()
+    {
+        _movement = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0).normalized;
+
+        if (PowerChargeAmount >= 1 & Input.GetAxis("Use Powerup") != 0)
+        {
+            PowerChargeAmount = 0;
+            StartCoroutine(BoostPowerup());
+        }
+    }
+    
     // Update is called once per frame
     void FixedUpdate()
     {
-        // Movement
-        if (Input.GetKey(_forwardKey))
+        rb.velocity = _movement * (_velocity * Time.fixedDeltaTime);
+        if (_movement == Vector3.zero)
         {
-            transform.Translate(Vector3.up * (_velocity * Time.deltaTime));
-        }
-
-        if (transform.position.y > _yLimit)
-        {
-            if (Input.GetKey(_backwardKey))
-            {
-                transform.Translate(Vector3.down * (_velocity * Time.deltaTime));
-            }
-        }
-
-        if (Input.GetKey(_leftKey))
-        {
-            transform.Translate(Vector3.left * (_velocity * Time.deltaTime));
-        }
-
-        if (Input.GetKey(_rightKey))
-        {
-            transform.Translate(Vector3.right * (_velocity * Time.deltaTime));
+            rb.velocity = Vector3.zero;
         }
         
         //Score Updating and YLimit
+        
         if (transform.position.y > topYPos)
         {
             topYPos = transform.position.y;
             _scoreBehavior.Score = topYPos;
-
-            _yLimit = (topYPos - _orthographicSize);
         }
         
     }
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (other.gameObject.CompareTag("Border"))
-        {
-            float xDistance = (transform.position.x - other.transform.position.x) / other.transform.localScale.x;
-            float yDistance = (transform.position.y - other.transform.position.y) / other.transform.localScale.y;
-            
-            
-
-            if (Mathf.Abs(xDistance) > Mathf.Abs(yDistance))
-            {
-                Vector3 targetpos = new Vector3(
-                    Mathf.Sign(xDistance) == 1 ? transform.position.x + _borderCollisionDistance : transform.position.x - _borderCollisionDistance,
-                    transform.position.y,
-                    transform.position.z
-                    );
-                
-                transform.position = Vector3.Lerp(transform.position, targetpos, _interpolateTime);
-            }
-            
-            else if (Mathf.Abs(yDistance) > Mathf.Abs(xDistance))
-            {
-                Vector3 targetpos = new Vector3(
-                    transform.position.x,
-                    Mathf.Sign(yDistance) == 1 ? transform.position.y + _borderCollisionDistance : transform.position.y - _borderCollisionDistance,
-                    transform.position.z
-                    );
-                
-                transform.position = Vector3.Lerp(transform.position, targetpos, _interpolateTime);
-            }
-        }
-        
-        if(other.gameObject.CompareTag("Bullet"))
+        if(other.gameObject.CompareTag("Bullet") & !inBoostPowerup)
         {
             GameBehavior.Instance.GameOver();
         }
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag("Bullet") & !inBoostPowerup)
+        {
+            PowerChargeAmount += _powerMeterChargeDelta;
+        }
+    }
+
+    private IEnumerator BoostPowerup()
+    {
+        inBoostPowerup = true;
+        float regularVelocity = _velocity;
+        _velocity *= boostMultiplier;
+        Color boostColor = new Color(59,125,171, 255);
+        _playerColor.material.color = boostColor;
+        
+        yield return new WaitForSeconds(boostDuration-2f);
+        
+        _playerColor.material.color = Color.white;
+        yield return new WaitForSeconds(0.5f);
+        _playerColor.material.color = boostColor;
+        yield return new WaitForSeconds(0.5f);
+        _playerColor.material.color = Color.white;
+        yield return new WaitForSeconds(0.5f);
+        _playerColor.material.color = boostColor;
+        yield return new WaitForSeconds(0.5f);
+        _playerColor.material.color = Color.white;
+
+        _velocity = regularVelocity;
+
+        inBoostPowerup = false;
     }
 }
