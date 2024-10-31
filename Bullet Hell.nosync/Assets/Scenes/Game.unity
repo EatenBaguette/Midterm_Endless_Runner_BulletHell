@@ -3117,6 +3117,9 @@ MonoBehaviour:
   rb: {fileID: 593466644}
   boostMultiplier: 5
   boostDuration: 6
+  _powerupWarningTime: 2
+  _numberOfWarningBlinks: 6
+  boostColor: {r: 0.23137255, g: 0.49019608, b: 0.67058825, a: 1}
 --- !u!212 &593466642
 SpriteRenderer:
   m_ObjectHideFlags: 0

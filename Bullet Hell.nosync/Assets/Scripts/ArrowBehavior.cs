@@ -45,6 +45,10 @@ public class ArrowBehavior : MonoBehaviour
     private bool inBoostPowerup = false;    
     [SerializeField] private float boostMultiplier;
     [SerializeField] private float boostDuration;
+    private Color _currentPowerupColor;
+    [SerializeField] private float _powerupWarningTime;
+    [SerializeField] private float _numberOfWarningBlinks;
+    [SerializeField] private Color boostColor = new Color(59f/255f, 125f/255f,171f/255f);
     
     
     // Start is called before the first frame update
@@ -103,26 +107,34 @@ public class ArrowBehavior : MonoBehaviour
 
     private IEnumerator BoostPowerup()
     {
+        _currentPowerupColor = boostColor;
         inBoostPowerup = true;
         float regularVelocity = _velocity;
         _velocity *= boostMultiplier;
-        Color boostColor = new Color(59,125,171, 255);
-        _playerColor.material.color = boostColor;
         
-        yield return new WaitForSeconds(boostDuration-2f);
+        _playerColor.material.color = _currentPowerupColor;
         
-        _playerColor.material.color = Color.white;
-        yield return new WaitForSeconds(0.5f);
-        _playerColor.material.color = boostColor;
-        yield return new WaitForSeconds(0.5f);
-        _playerColor.material.color = Color.white;
-        yield return new WaitForSeconds(0.5f);
-        _playerColor.material.color = boostColor;
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(boostDuration-_powerupWarningTime);
+
+        StartCoroutine(PowerupBlink());
+        
+        yield return new WaitForSeconds(_powerupWarningTime);
+
         _playerColor.material.color = Color.white;
 
         _velocity = regularVelocity;
 
         inBoostPowerup = false;
+    }
+
+    private IEnumerator PowerupBlink()
+    {
+        for(int i = 0 ; i < _numberOfWarningBlinks ; i++)
+        {
+            _playerColor.material.color = Color.white;
+            yield return new WaitForSeconds(_powerupWarningTime / _numberOfWarningBlinks / 2f);
+            _playerColor.material.color = _currentPowerupColor;
+            yield return new WaitForSeconds(_powerupWarningTime / _numberOfWarningBlinks / 2f);
+        }
     }
 }
