@@ -23,6 +23,8 @@ public class GameBehavior : MonoBehaviour
     private bool _attackPatternActive;
     
     public Utilities.GameState gameState = Utilities.GameState.Play;
+    
+    private AudioBehavior _audioBehavior;
     private void Awake()
     {
         if(Instance != null && Instance != this)
@@ -45,6 +47,9 @@ public class GameBehavior : MonoBehaviour
         _gameOverScreen.SetActive(false);
         gameState = Utilities.GameState.Play;
         
+        _audioBehavior = GameObject.Find("AudioManager").GetComponent<AudioBehavior>();
+        _audioBehavior.gameState = gameState;
+        
         _player = GameObject.Find("Player");
 
         _attackPatternActive = false;
@@ -63,6 +68,14 @@ public class GameBehavior : MonoBehaviour
         if (gameState == Utilities.GameState.Play)
         {
             if (!_attackPatternActive) StartCoroutine(AttackPattern1());
+        }
+
+        if (gameState == Utilities.GameState.GameOver || gameState == Utilities.GameState.Pause)
+        {
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                Restart();
+            }
         }
     }
 
