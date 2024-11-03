@@ -5,6 +5,11 @@ using UnityEngine.SceneManagement;
 
 public class TitleManager : MonoBehaviour
 {
+    public GameState gameState;
+    void Awake()
+    {
+        gameState.Title();
+    }
     // Update is called once per frame
     void Update()
     {

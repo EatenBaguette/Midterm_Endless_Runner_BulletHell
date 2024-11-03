@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -21,15 +22,17 @@ public class GameBehavior : MonoBehaviour
     public float timeBetweenWaves = 3.0f;
 
     private bool _attackPatternActive;
-    
-    public Utilities.GameState gameState = Utilities.GameState.Play;
+
+    private GameState gameState;
+
+    private ScoreBehavior _score;
     
     private AudioBehavior _audioBehavior;
     private void Awake()
     {
         if(Instance != null && Instance != this)
         {
-            Destroy(obj: this);
+            Destroy(gameObject);
         }
 
         else
@@ -45,14 +48,20 @@ public class GameBehavior : MonoBehaviour
         _pauseScreen.SetActive(false);
         _gameOverScreen = GameObject.Find("GameOverScreen");
         _gameOverScreen.SetActive(false);
-        gameState = Utilities.GameState.Play;
+        
+        _score = GameObject.Find("Player").GetComponent<ScoreBehavior>();
+        
+        gameState = GameObject.Find("GameState").GetComponent<GameState>();
+        
+        gameState.Play();
         
         _audioBehavior = GameObject.Find("AudioManager").GetComponent<AudioBehavior>();
-        _audioBehavior.gameState = gameState;
         
         _player = GameObject.Find("Player");
 
         _attackPatternActive = false;
+        
+        StartCoroutine(ChangeTimeBetweenWaves());
 
         Cursor.visible = false;
     }
@@ -65,12 +74,12 @@ public class GameBehavior : MonoBehaviour
             SwitchPausePlay();
         }
 
-        if (gameState == Utilities.GameState.Play)
+        if (gameState.gameState == Utilities.GameState.Play)
         {
             if (!_attackPatternActive) StartCoroutine(AttackPattern1());
         }
 
-        if (gameState == Utilities.GameState.GameOver || gameState == Utilities.GameState.Pause)
+        if (gameState.gameState == Utilities.GameState.GameOver)
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
@@ -81,16 +90,16 @@ public class GameBehavior : MonoBehaviour
 
     public void SwitchPausePlay()
     {
-        if (gameState == Utilities.GameState.Play)
+        if (gameState.gameState == Utilities.GameState.Play)
         {
-            gameState = Utilities.GameState.Pause;
+            gameState.Pause();
             Time.timeScale = 0f;
             _pauseScreen.SetActive(true);
             Cursor.visible = true;
         }
-        else if (gameState == Utilities.GameState.Pause)
+        else if (gameState.gameState == Utilities.GameState.Pause)
         {
-            gameState = Utilities.GameState.Play;
+            gameState.Play();
             Time.timeScale = 1.0f;
             _pauseScreen.SetActive(false);
             Cursor.visible = false;
@@ -100,21 +109,23 @@ public class GameBehavior : MonoBehaviour
     public void ReturnToTitle()
     {
         StopAllCoroutines();
-        gameState = Utilities.GameState.Title;
+        gameState.Title();
+        Destroy(_audioBehavior.gameObject);
+        Destroy(gameState.gameObject);
         SceneManager.LoadScene("Title");
     }
 
     public void GameOver()
     {
-        StopAllCoroutines();
-        gameState = Utilities.GameState.GameOver;
-        _gameOverScreen.SetActive(true);
+        gameState.GameOver();
         Time.timeScale = 0f;
+        _gameOverScreen.SetActive(true);
         Cursor.visible = true;
     }
 
     public void Restart()
     {
+        gameState.GameOver();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     
@@ -210,6 +221,17 @@ public class GameBehavior : MonoBehaviour
             }
             
             yield return new WaitForSeconds(timeBetweenAttacks);
+        }
+    }
+
+    private IEnumerator ChangeTimeBetweenWaves()
+    {
+        WaitForSeconds oneSec = new WaitForSeconds(1);
+        
+        while (timeBetweenWaves > 0)
+        {
+            yield return oneSec;
+            timeBetweenWaves -= (1.0f / 30f);
         }
     }
     

@@ -11,6 +11,11 @@ public class ArrowBehavior : MonoBehaviour
 {
     [SerializeField] private float _velocity = 150f;
 
+    public float Speed
+    {
+        get => _velocity;
+    }
+
     private ScoreBehavior _scoreBehavior;
 
     [SerializeField] private SpriteRenderer _playerColor;
@@ -107,8 +112,8 @@ public class ArrowBehavior : MonoBehaviour
 
     private IEnumerator BoostPowerup()
     {
-        _currentPowerupColor = boostColor;
         inBoostPowerup = true;
+        _currentPowerupColor = boostColor;
         float regularVelocity = _velocity;
         _velocity *= boostMultiplier;
         

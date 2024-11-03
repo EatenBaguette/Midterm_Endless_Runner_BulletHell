@@ -2759,6 +2759,7 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420033}
+  - component: {fileID: 519420034}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2853,6 +2854,14 @@ MonoBehaviour:
   bottomRight: {x: 0, y: 0, z: 0}
   _interpolateTime: 0.1
   _distanceInFront: -2
+--- !u!81 &519420034
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
 --- !u!1 &542593802
 GameObject:
   m_ObjectHideFlags: 0
@@ -3232,7 +3241,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _velocity: 200
   _playerColor: {fileID: 2004660034}
-  _powerMeterChargeDelta: 1
+  _powerMeterChargeDelta: 0.05
   rb: {fileID: 593466644}
   boostMultiplier: 5
   boostDuration: 6
@@ -9966,7 +9975,6 @@ MonoBehaviour:
   _player: {fileID: 593466640}
   bulletPrefab: {fileID: 1954979474425133841, guid: 51000676e6aa140bfb7e657346a9f49e, type: 3}
   timeBetweenWaves: 3
-  gameState: 0
 --- !u!1 &1729913452
 GameObject:
   m_ObjectHideFlags: 0
@@ -10548,7 +10556,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1820383015}
   - component: {fileID: 1820383014}
-  - component: {fileID: 1820383013}
   m_Layer: 0
   m_Name: QuitGame
   m_TagString: Untagged
@@ -10556,18 +10563,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1820383013
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1820383012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 896c3f0cba4a345a5b6f4dd65171a870, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1820383014
 MonoBehaviour:
   m_ObjectHideFlags: 0
