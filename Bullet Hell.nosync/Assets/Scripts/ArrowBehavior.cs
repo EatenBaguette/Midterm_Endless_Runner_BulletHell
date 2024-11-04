@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Numerics;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 using Vector3 = UnityEngine.Vector3;
 
+[RequireComponent(typeof(AudioSource))]
 public class ArrowBehavior : MonoBehaviour
 {
     [SerializeField] private float _velocity = 150f;
@@ -55,6 +57,9 @@ public class ArrowBehavior : MonoBehaviour
     [SerializeField] private float _numberOfWarningBlinks;
     [SerializeField] private Color boostColor = new Color(59f/255f, 125f/255f,171f/255f);
     
+    private AudioSource _audioSource;
+    [SerializeField] private AudioMixerGroup _SFXMixer;
+    [SerializeField] private AudioClip _closeCall;
     
     // Start is called before the first frame update
     void Start()
@@ -62,6 +67,7 @@ public class ArrowBehavior : MonoBehaviour
         _scoreBehavior = GetComponent<ScoreBehavior>();
         _orthographicSize = GameObject.FindObjectOfType<Camera>().orthographicSize;
         _powerupMeter = GameObject.Find("Powerup Bar Mask").GetComponent<RectMask2D>();
+         _audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -107,6 +113,8 @@ public class ArrowBehavior : MonoBehaviour
         if (other.gameObject.CompareTag("Bullet") & !inBoostPowerup)
         {
             PowerChargeAmount += _powerMeterChargeDelta;
+            _audioSource.PlayOneShot(_closeCall);
+            
         }
     }
 

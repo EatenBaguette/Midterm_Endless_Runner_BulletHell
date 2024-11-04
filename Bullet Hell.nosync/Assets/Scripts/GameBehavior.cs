@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(AudioSource))]
 public class GameBehavior : MonoBehaviour
 {
     //Setup
@@ -14,12 +16,21 @@ public class GameBehavior : MonoBehaviour
     private GameObject _pauseScreen;
     private GameObject _gameOverScreen;
     
+    private AudioSource _audioSource;
+    [SerializeField] private AudioMixerGroup _SFXMixer;
+    [SerializeField] private AudioClip _spawnEnemy;
+    [SerializeField] private AudioClip _pauseSound;
+    [SerializeField] private AudioClip _unpauseSound;
+    
     [SerializeField] private GameObject _player;
 
     [SerializeField] private GameObject bulletPrefab;
     
     //Variable State Assignments
     public float timeBetweenWaves = 3.0f;
+    public float bulletSpeed = 3.0f;
+    public int bulletsAddition = 0;
+    public float distanceBetweenSubtractor = 0;
 
     private bool _attackPatternActive;
 
@@ -61,7 +72,12 @@ public class GameBehavior : MonoBehaviour
 
         _attackPatternActive = false;
         
-        StartCoroutine(ChangeTimeBetweenWaves());
+        _audioSource = GetComponent<AudioSource>(); 
+        _audioSource.outputAudioMixerGroup = _SFXMixer;
+        
+        StartCoroutine(DecreaseDistanceBetweenAttacks());
+        StartCoroutine(DecreaseTimeBetweenWaves());
+        StartCoroutine(HarderBulletsOverTime());
 
         Cursor.visible = false;
     }
@@ -93,6 +109,7 @@ public class GameBehavior : MonoBehaviour
         if (gameState.gameState == Utilities.GameState.Play)
         {
             gameState.Pause();
+            _audioSource.PlayOneShot(_pauseSound);
             Time.timeScale = 0f;
             _pauseScreen.SetActive(true);
             Cursor.visible = true;
@@ -100,6 +117,7 @@ public class GameBehavior : MonoBehaviour
         else if (gameState.gameState == Utilities.GameState.Pause)
         {
             gameState.Play();
+            _audioSource.PlayOneShot(_unpauseSound);
             Time.timeScale = 1.0f;
             _pauseScreen.SetActive(false);
             Cursor.visible = false;
@@ -126,6 +144,7 @@ public class GameBehavior : MonoBehaviour
     public void Restart()
     {
         gameState.GameOver();
+        _audioBehavior.PressStart();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     
@@ -136,48 +155,49 @@ public class GameBehavior : MonoBehaviour
         yield return new WaitForSeconds(timeBetweenWaves);
 
         // add GUI warning here
+        
 
         StartCoroutine(StraightAttack(
-            3,
+            3 + bulletsAddition,
             0.25f,
             4,
             -6f,
             5f,
-            3,
-            3,
-            225f,
-            3f));
-        
-        yield return new WaitForSeconds(0.5f);
+            3 - distanceBetweenSubtractor,
+            3 - distanceBetweenSubtractor,
+            225f + Random.Range(-25, 25),
+            bulletSpeed));
+
+        yield return new WaitForSeconds((1.0f + Random.Range(-0.5f, 0.5f)));
         
         StartCoroutine(StraightAttack(
-            3,
+            3 + bulletsAddition,
             0.25f,
             4,
             6f,
             5f,
             -3,
             3,
-            135f,
-            2f));
-        
-        yield return new WaitForSeconds(0.5f);
+            135f + Random.Range(-25, 25),
+            bulletSpeed - 1.0f));
+
+        yield return new WaitForSeconds((1.0f + Random.Range(-0.5f, 0.5f)));
         
         StartCoroutine(StraightAttack(
-            3,
+            3 + bulletsAddition,
             0.25f,
             10,
             -5f,
             10f,
             3,
             0,
-            180f,
-            3f));
+            180f + Random.Range(-25, 25),
+            bulletSpeed));
 
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds((1.5f + Random.Range(-0.5f, 0.5f)));
 
         StartCoroutine(StraightAttack(
-            Random.Range(1,10),
+            Random.Range(1,10) + bulletsAddition,
             Random.Range(0.5f,2f),
             Random.Range(5,10),
             (Random.Range(0, 1) == 0 ? -1 : 1) * Random.Range(0,3),
@@ -185,7 +205,7 @@ public class GameBehavior : MonoBehaviour
             3,
             3,
             Random.Range(0,360),
-            Random.Range(0.5f,6f)
+            Random.Range(0.5f, 4.5f)
             ));
         
         yield return new WaitForSeconds(timeBetweenWaves);
@@ -204,6 +224,8 @@ public class GameBehavior : MonoBehaviour
         float angle, 
         float speed)
     {
+        _audioSource.PlayOneShot(_spawnEnemy);
+        
         for (int i = 0; i < numOfAttacks; i++)
         {
             for (int j = 0; j < numOfBulletsPerAttack; j++)
@@ -224,23 +246,59 @@ public class GameBehavior : MonoBehaviour
         }
     }
 
-    private IEnumerator ChangeTimeBetweenWaves()
+    private IEnumerator DecreaseTimeBetweenWaves()
     {
         WaitForSeconds oneSec = new WaitForSeconds(1);
         
         while (timeBetweenWaves > 0)
         {
-            yield return oneSec;
             timeBetweenWaves -= (1.0f / 30f);
+            
+            yield return oneSec;
+        }
+    }
+
+    private IEnumerator DecreaseDistanceBetweenAttacks()
+    {
+        WaitForSeconds oneSec = new WaitForSeconds(1);
+        
+        while (distanceBetweenSubtractor < 2f)
+        {
+            distanceBetweenSubtractor += (1.0f / 60f);
+            yield return oneSec;
+        }
+    }
+
+    private IEnumerator HarderBulletsOverTime()
+    {
+        WaitForSeconds oneSec = new WaitForSeconds(1);
+        
+        while (true)
+        {
+            float numBulletsFloat = 0;
+            
+            bulletSpeed += (1.0f / 45f);
+            
+            numBulletsFloat += (1.0f / 20f);
+            bulletsAddition = Mathf.FloorToInt(numBulletsFloat);
+            
+            yield return oneSec;
         }
     }
     
     private GameObject CreateBullet(Vector3 pos, Quaternion rot, float speed)
     {
-        GameObject bulletInstance = Instantiate(bulletPrefab, pos, rot);
-        
-        bulletInstance.GetComponent<BulletBehavior>().speed = speed;
-        
-        return bulletInstance;
+        if (Vector3.Distance(pos, _player.transform.position) <= 3.0f)
+        {
+            return null;
+        }
+        else
+        {
+            GameObject bulletInstance = Instantiate(bulletPrefab, pos, rot);
+                    
+                    bulletInstance.GetComponent<BulletBehavior>().speed = speed;
+                    
+                    return bulletInstance;
+        }
     }
 }

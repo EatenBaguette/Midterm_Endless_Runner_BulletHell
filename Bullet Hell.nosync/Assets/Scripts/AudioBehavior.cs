@@ -19,10 +19,12 @@ public class AudioBehavior : MonoBehaviour
 
     [SerializeField] private AudioClip[] _layers = new AudioClip[3];
     [SerializeField] private AudioClip _gameOver;
+    [SerializeField] private AudioClip _pressStart;
 
     private AudioSource _audioSource;
 
     [SerializeField] private AudioMixerGroup[] _audioMixerGroups = new AudioMixerGroup[3];
+    [SerializeField] private AudioMixerGroup _SFXMixer;
 
     private bool _layer3IsPlaying = false;
     private bool _isFirstPlay = true;
@@ -79,7 +81,7 @@ public class AudioBehavior : MonoBehaviour
         _audioMixerGroups[1].audioMixer.SetFloat(("volume1"), _minVolume);
         _audioMixerGroups[2].audioMixer.SetFloat(("volume2"), _minVolume);
         
-        _nextEventTime = AudioSettings.dspTime + 1.0f;
+        _nextEventTime = AudioSettings.dspTime + 2.0f;
         _running = true;
     }
 
@@ -92,7 +94,7 @@ public class AudioBehavior : MonoBehaviour
 
         double time = AudioSettings.dspTime;
 
-        if (time + 0.5f > _nextEventTime)
+        if (time + 1.0f > _nextEventTime)
         {
             for (int i = 0; i < 6; i += 2)
             {
@@ -175,7 +177,8 @@ public class AudioBehavior : MonoBehaviour
                     StartCoroutine(Fade(_audioMixerGroups[2], 2, _minVolume, 0.15f));
                     StartCoroutine(Fade(_audioMixerGroups[1], 1, _minVolume, 0.15f));
                     StartCoroutine(Fade(_audioMixerGroups[0], 0, _minVolume, 0.15f));
-
+                    
+                    _audioSource.outputAudioMixerGroup = _SFXMixer;
                     _audioSource.PlayOneShot(_gameOver);
                 }
                 break;
@@ -205,6 +208,12 @@ public class AudioBehavior : MonoBehaviour
         }
         
         mixerGroup.audioMixer.SetFloat(("volume" + groupNumberInArray), targetVolume);
+    }
+
+    public void PressStart()
+    {
+        _audioSource.outputAudioMixerGroup = _SFXMixer;
+        _audioSource.PlayOneShot(_pressStart);
     }
 }
 
